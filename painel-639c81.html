@@ -1,5 +1,12 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#FFFFFF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
 <title>Manuscrito — Professor</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <style>:root{
   --bg:#FFFFFF; --nav:rgba(255,255,255,.82); --card:#FFFFFF; --card2:#FBFBFD;
   --fill:#F5F5F7; --fill2:#FAFAFC;
@@ -68,23 +75,25 @@ input::placeholder,textarea::placeholder{color:var(--fg3)}
 /* estatísticas */
 .hud{display:flex;background:var(--card);border:1px solid var(--line);border-radius:16px;
   overflow:hidden;margin:16px 0 14px}
-.hud div{flex:1 1 0;min-width:0;padding:12px 8px;text-align:center;border-left:1px solid var(--sep)}
+.hud div{flex:1 1 0;min-width:0;padding:13px 8px;text-align:center;border-left:1px solid var(--sep)}
 .hud div:first-child{border-left:0}
-.hud>div>span{display:block;font:500 11px/1 var(--f);color:var(--fg2);margin-bottom:5px;
+.hud>div>span{display:block;font:500 13px/1 var(--f);color:var(--fg2);margin-bottom:6px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.hud b{display:block;font:600 19px/1.1 var(--m);font-variant-numeric:tabular-nums;letter-spacing:-.02em;white-space:nowrap}
+.hud b{display:block;font:600 22px/1.1 var(--m);font-variant-numeric:tabular-nums;letter-spacing:-.02em;white-space:nowrap}
 .hud.urgente b#rel{color:var(--red)}
 
 /* famílias */
 .fams{display:flex;gap:7px;flex-wrap:nowrap;overflow-x:auto;margin:0 -16px 14px;padding:0 16px 2px;
   scrollbar-width:none;-ms-overflow-style:none}
 .fams::-webkit-scrollbar{display:none}
-.fam{flex:0 0 auto;border-radius:99px;padding:6px 13px;font:600 13px/1 var(--f);
-  color:var(--fg2);background:var(--card);border:1px solid var(--line)}
-.fam.on{background:var(--green);color:#fff;border-color:transparent}
+.fam{flex:0 0 auto;min-height:44px;border-radius:99px;padding:0 17px;font:600 15px/1 var(--f);
+  color:var(--fg2);background:var(--card);border:1px solid var(--line);cursor:pointer}
+.fam.on{color:var(--green);border-color:var(--green)}
+.fam.sel{background:var(--fg);color:#fff;border-color:var(--fg)}
+.fam:active{transform:scale(.96)}
 
 /* grelha de cartões */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(134px,1fr));gap:10px}
 .cb{text-align:left;background:var(--card);border:1px solid var(--line);box-shadow:var(--sombra);
   border-radius:18px;padding:15px;cursor:pointer;
   color:var(--fg);font-family:var(--f);display:flex;flex-direction:column;gap:7px;min-width:0;
@@ -92,11 +101,11 @@ input::placeholder,textarea::placeholder{color:var(--fg3)}
 .cb:hover{box-shadow:0 2px 4px rgba(0,0,0,.05), 0 12px 28px rgba(0,0,0,.07)}
 .cb:active{transform:scale(.97)}
 .cb .f{font:600 12px/1 var(--f);letter-spacing:.02em;color:var(--fam)}
-.cb h4{font:600 16px/1.25 var(--f);letter-spacing:-.01em;margin:0;flex:1}
+.cb h4{font:600 17px/1.3 var(--f);letter-spacing:-.01em;margin:0;flex:1}
 .cb .meta{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .dots{display:flex;gap:3px}
 .dots i{width:5px;height:5px;border-radius:99px;background:var(--fam);display:block}
-.pts{font:600 13px/1 var(--m);font-variant-numeric:tabular-nums;color:var(--fg2)}
+.pts{font:600 14px/1 var(--m);font-variant-numeric:tabular-nums;color:var(--fg2)}
 .cb.done{opacity:.5;box-shadow:none}
 .cb.done .pts{color:var(--green)}
 
@@ -183,7 +192,7 @@ footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--sep);color:va
 .sala{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 12px}
 .sala h5{font:600 13px/1 var(--f);color:var(--fg2);margin:0 0 8px}
 .sala .tres{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
-.sala select{font-size:14px;padding:9px 6px;border-radius:9px}
+.sala select{font-size:15px;padding:13px 6px;border-radius:10px;min-height:46px}
 
 .escolhe{display:flex;gap:7px;flex-wrap:wrap;margin:2px 0 12px}
 .escolhe button{flex:1 1 56px;min-width:56px;background:var(--fill);border:1px solid transparent;
@@ -201,22 +210,25 @@ footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--sep);color:va
 .passo{font:600 12px/1 var(--f);color:var(--fg2);margin:0 0 8px}
 
 /* ---- tabela por conectivas ---- */
-.ttwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:4px -4px 12px;padding:0 4px}
+.ttwrap{position:relative;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:4px -4px 4px;padding:0 4px}
+.desliza{display:flex;align-items:center;gap:6px;justify-content:center;
+  font:500 13px/1 var(--f);color:var(--fg2);margin:0 0 14px}
+.desliza::after{content:"\203A\203A";font:700 15px/1 var(--m);color:var(--fg3)}
 .tt2{border-collapse:separate;border-spacing:0;font-family:var(--m);white-space:nowrap}
 .tt2 th,.tt2 td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:0;text-align:center}
 .tt2 thead th{border-top:1px solid var(--line);background:var(--fill2);
   font:600 14px/34px var(--m);color:var(--fg2);height:34px}
 .tt2 th:first-child,.tt2 td:first-child{border-left:1px solid var(--line)}
-.tt2 .fx{position:sticky;left:0;z-index:2;background:var(--card);width:30px;min-width:30px}
+.tt2 .fx{position:sticky;left:0;z-index:2;background:var(--card);width:38px;min-width:38px}
 .tt2 thead .fx{background:var(--fill2)}
-.tt2 .fx:nth-child(2){left:30px} .tt2 .fx:nth-child(3){left:60px}
+.tt2 .fx:nth-child(2){left:38px} .tt2 .fx:nth-child(3){left:76px}
 .tt2 .par{width:12px;min-width:12px;color:var(--fg3);border-right:0;background:transparent}
-.tt2 .var{width:26px;min-width:26px;color:var(--fg3);font-size:14px;background:var(--fill2)}
-.tt2 .op{width:34px;min-width:34px}
+.tt2 .var{width:30px;min-width:30px;color:var(--fg3);font-size:14px;background:var(--fill2)}
+.tt2 .op{width:44px;min-width:44px}
 .tt2 thead .op.prin{color:var(--blue);background:#EAF3FF}
 .tt2 td.op.prin{background:#F6FAFF}
-.tt2 .fx2{width:34px;min-width:34px;border-right:0}
-.tt2 td button{width:100%;height:38px;border:0;background:transparent;
+.tt2 .fx2{width:44px;min-width:44px;border-right:0}
+.tt2 td button{width:100%;height:46px;border:0;background:transparent;
   font:700 15px/1 var(--m);color:var(--fg3);cursor:pointer}
 .tt2 td button.v{background:var(--green);color:#fff}
 .tt2 td button.f{background:var(--fill);color:var(--fg2)}
@@ -230,6 +242,32 @@ footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--sep);color:va
 .teclas button:active{transform:scale(.94);background:var(--fill)}
 .teclas .apaga{color:var(--red);font-size:16px}
 #esc{min-height:56px;display:flex;align-items:center;justify-content:center;color:var(--fg)}
+
+/* ---- botão de voltar no topo do cartão ---- */
+.voltar{display:inline-flex;align-items:center;min-height:44px;margin:-6px 0 6px -8px;
+  padding:0 10px;background:transparent;border:0;cursor:pointer;
+  font:600 16px/1 var(--f);color:var(--blue)}
+.voltar:active{opacity:.6}
+
+/* ---- mobile-first: 2x2 nas estatísticas, 4 colunas no máximo em ecrã grande ---- */
+@media (max-width:519px){
+  .hud{flex-wrap:wrap}
+  .hud div{flex:1 1 50%;max-width:50%}
+  .hud div:nth-child(3){border-left:0}
+  .hud div:nth-child(n+3){border-top:1px solid var(--sep)}
+}
+@media (min-width:520px){
+  .grid{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
+}
+@media (min-width:860px){
+  .grid{grid-template-columns:repeat(4,1fr)}
+}
+.rodape{position:sticky;bottom:0;z-index:12;margin:20px -16px 0;
+  padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));
+  background:var(--nav);border-top:1px solid var(--sep)}
+@supports ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
+  .rodape{-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px)}
+}
 
 .segs{display:flex;background:var(--fill);border-radius:10px;padding:2px;margin:18px 0 4px}
 .segs button{flex:1;appearance:none;border:0;background:transparent;color:var(--fg);
@@ -263,7 +301,8 @@ footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--sep);color:va
 .prata .pos{background:#9AA0A6!important;color:#fff}
 .bronze .pos{background:#B06A2C!important;color:#fff}
 </style>
-
+</head>
+<body>
 <div class="nav">
   <p class="t">Manuscrito Perdido · Professor</p>
   <p class="s" id="navs">Painel ao vivo e ranking</p>
@@ -490,3 +529,5 @@ function projeta(bons){
 
 painel();
 </script>
+</body>
+</html>
