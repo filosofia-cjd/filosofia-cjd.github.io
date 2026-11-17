@@ -269,6 +269,10 @@ footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--sep);color:va
   .rodape{-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px)}
 }
 
+/* ---- sem seleção nem menu de long-press (continua a escrever-se nas caixas) ---- */
+body{-webkit-user-select:none;-moz-user-select:none;user-select:none;-webkit-touch-callout:none}
+textarea,input{-webkit-user-select:text;-moz-user-select:text;user-select:text}
+
 .segs{display:flex;background:var(--fill);border-radius:10px;padding:2px;margin:18px 0 4px}
 .segs button{flex:1;appearance:none;border:0;background:transparent;color:var(--fg);
   font:600 15px/1 var(--f);padding:9px 10px;border-radius:8px;cursor:pointer}
@@ -286,6 +290,7 @@ footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--sep);color:va
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tile .d+.d{margin-top:1px}
 .tile .av{font:600 12px/1 var(--f);color:var(--red);margin-top:6px}
+.tile .rap{font:600 12px/1.3 var(--f);color:var(--orange);margin-top:5px}
 .tile .ok{font:600 12px/1 var(--f);color:var(--green);margin-top:6px}
 .est{display:flex;gap:8px;align-items:center;font:400 14px/1 var(--f);color:var(--fg2);margin:12px 2px 0}
 .ponto{width:8px;height:8px;border-radius:99px;background:var(--fg3);flex:0 0 auto}
@@ -402,6 +407,7 @@ function deVivo(){
     const v=vivo[k]||{};
     return {eq:parseInt(k,10),nome:v.nm||"",pts:v.pts||0,cart:v.cart||0,
             pistas:v.pistas||0,saidas:v.saidas||0,fora:!!v.fora,ult:v.ult||"",
+            rap:Array.isArray(v.rap)?v.rap:[],
             txt:v.txt||null,fim:v.fim||null,ts:v.ts||0,ano:ANO_VER,mins:0};
   }).sort((a,b)=> b.pts-a.pts || b.cart-a.cart || a.eq-b.eq);
 }
@@ -429,6 +435,8 @@ function pinta(){
       '</span><span class="p">'+e.pts+'</span></div>'+
       '<div class="d">mesa '+e.eq+' · '+e.cart+'/16 cartões</div>'+
       '<div class="d">'+pl(e.pistas,"pista","pistas")+' · '+pl(e.saidas,"saída","saídas")+'</div>'+
+      (e.rap.length?'<div class="rap" title="'+esc(e.rap.join(", "))+'">⚡ '+
+        pl(e.rap.length,"cartão muito rápido","cartões muito rápidos")+'</div>':'')+
       (e.ult?'<div class="d">'+esc(e.ult)+'</div>':'')+
       (e.txt?'<div class="d" style="color:var(--blue)">'+pl(Object.keys(e.txt).length,"resposta escrita","respostas escritas")+'</div>':'')+
       pe+'</div>';

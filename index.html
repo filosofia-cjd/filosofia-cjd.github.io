@@ -268,6 +268,10 @@ footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--sep);color:va
 @supports ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
   .rodape{-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px)}
 }
+
+/* ---- sem seleção nem menu de long-press (continua a escrever-se nas caixas) ---- */
+body{-webkit-user-select:none;-moz-user-select:none;user-select:none;-webkit-touch-callout:none}
+textarea,input{-webkit-user-select:text;-moz-user-select:text;user-select:text}
 </style>
 </head>
 <body>
@@ -293,14 +297,14 @@ const MIN_JOGO = 32;
    ==================================================================== */
 const SYNC = { url: "https://manuscrito-cid-default-rtdb.europe-west1.firebasedatabase.app", sessao: "dmf2026" };
 
-let _ultEnvio=0, _bat=null;
+let _ultEnvio=0, _bat=null, _pausado=null;
 function envia(forca, fora){
   if(!SYNC.url || !ST || !ST.eq) return;
   const agora=Date.now();
   if(!forca && agora-_ultEnvio<4000) return;
   _ultEnvio=agora;
   const corpo={ nm:ST.nm, pts:ST.pts, cart:Object.keys(ST.feitos).length, txt:ST.textos||null,
-    pistas:ST.pistas, saidas:ST.saidas||0, fora:!!fora,
+    pistas:ST.pistas, saidas:ST.saidas||0, fora:!!fora, rap:ST.rap||[],
     ult:ST.ult||"", fim:ST.fim||null, ts:agora };
   const u=SYNC.url.replace(/\/+$/,"")+"/"+SYNC.sessao+"/"+ST.ano+"/"+ST.eq+".json";
   try{
@@ -312,9 +316,30 @@ function bate(){ if(_bat) clearInterval(_bat);
   if(SYNC.url) _bat=setInterval(function(){ envia(true, document.hidden); },15000); }
 document.addEventListener("visibilitychange",function(){
   if(!ST || ST.fim) return;
-  if(document.hidden){ ST.saidas=(ST.saidas||0)+1; guarda(); envia(true,true); }
-  else envia(true,false);
+  if(document.hidden){ _pausado=croPausa(); ST.saidas=(ST.saidas||0)+1; guarda(); envia(true,true); }
+  else { if(_pausado){ croNoMeu(_pausado); _pausado=null; } envia(true,false); }
 });
+
+/* ---------- sem copiar, sem colar ----------
+   Não impede uma fotografia (nada impede), mas tira a via fácil de levar o
+   enunciado para outro lado e de despejar texto de fora nas respostas. */
+["contextmenu","copy","cut","paste","drop","dragover","dragstart"].forEach(function(ev){
+  document.addEventListener(ev,function(e){ e.preventDefault(); },{capture:true});
+});
+
+/* ---------- cronómetro por cartão (sinal de ritmo para o painel) ---------- */
+/* Conta só o tempo com o cartão aberto E a app à frente. Sair da app pára a
+   contagem, para que uma ida ao ChatGPT não faça o tempo parecer honesto. */
+const LIMITE={10:20,20:30,30:45,50:60};   // segundos abaixo dos quais o painel sinaliza
+let _crono=null;
+function croNoMeu(cod){ croFecha(); if(cod) _crono={cod:cod,t:Date.now()}; }
+function croFecha(){
+  if(!_crono||!ST) return;
+  if(!ST.tmp) ST.tmp={};
+  ST.tmp[_crono.cod]=(ST.tmp[_crono.cod]||0)+(Date.now()-_crono.t);
+  _crono=null;
+}
+function croPausa(){ const c=_crono&&_crono.cod; croFecha(); return c; }
 
 /* ---------- utilitários ---------- */
 function rng(seed){let a=seed>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
@@ -511,7 +536,7 @@ function escolheNome(ano,eq){
   const arranca2=()=>{
     clearInterval(t);
     ST={ano:ano,eq:eq,nm:nomeDe(eq,k),ini:Date.now(),pts:0,feitos:{},err:{},
-        pistas:0,saidas:0,ult:"",passo:{},textos:{},fim:null};
+        pistas:0,saidas:0,ult:"",passo:{},textos:{},tmp:{},rap:[],fim:null};
     guarda(); jogo(); envia(true,false);
   };
   document.getElementById("vai").onclick=function(){
@@ -608,6 +633,16 @@ function tique(){
   pinta(); tmr=setInterval(pinta,1000);
 }
 
+function regista(c){
+  croFecha();
+  ST.feitos[c.cod]=c.p; ST.pts+=c.p;
+  const seg=Math.round(((ST.tmp&&ST.tmp[c.cod])||0)/1000);
+  const semErros=!(ST.err&&ST.err[c.cod]);
+  if(!ST.rap) ST.rap=[];
+  if(semErros && seg < (LIMITE[c.p]||30) && ST.rap.indexOf(c.cod)<0) ST.rap.push(c.cod+":"+seg+"s");
+  guarda(); envia(true,false);
+}
+
 function abre(c){
   const d=dados(c), feito=!!ST.feitos[c.cod], slot=document.getElementById("slot");
   slot.dataset.conf="";
@@ -682,10 +717,10 @@ function abre(c){
   }
   h+='<div style="margin-top:14px"><button class="btn quiet" id="volta">Voltar ao tabuleiro</button></div></div>';
   slot.innerHTML=h;
-  ST.ult=c.cod+" · "+c.t; guarda(); envia(false,false);
+  ST.ult=c.cod+" · "+c.t; croNoMeu(feito?null:c.cod); guarda(); envia(false,false);
   soTabuleiro(false);
   document.querySelectorAll("#volta,#voltaCima").forEach(b=>{
-    b.onclick=()=>{ jogo(); window.scrollTo({top:0}); };
+    b.onclick=()=>{ croFecha(); jogo(); window.scrollTo({top:0}); };
   });
   window.scrollTo({top:0});
 
@@ -836,7 +871,7 @@ function abre(c){
   };
 
   function acerta(){
-    ST.feitos[c.cod]=c.p; ST.pts+=c.p; guarda(); envia(true,false);
+    regista(c);
     m.className="msg ok"; m.textContent="Certo. +"+c.p+" pontos.";
     setTimeout(()=>{ jogo(); window.scrollTo({top:0,behavior:"smooth"}); },700);
   }
@@ -901,7 +936,7 @@ function abre(c){
         setTimeout(()=>abre(c),700);
         return;
       }
-      ST.feitos[c.cod]=c.p; ST.pts+=c.p; guarda(); envia(true,false);
+      regista(c);
       m.className="msg ok"; m.textContent="Certo. +"+c.p+" pontos.";
       setTimeout(()=>{ jogo(); window.scrollTo({top:0,behavior:"smooth"}); },700);
     } else {
