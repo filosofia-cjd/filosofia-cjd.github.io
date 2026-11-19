@@ -272,6 +272,14 @@ footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--sep);color:va
 /* ---- sem seleção nem menu de long-press (continua a escrever-se nas caixas) ---- */
 body{-webkit-user-select:none;-moz-user-select:none;user-select:none;-webkit-touch-callout:none}
 textarea,input{-webkit-user-select:text;-moz-user-select:text;user-select:text}
+
+/* ---- elementos da equipa ---- */
+.elemsb{display:block;width:100%;min-height:46px;margin:0 0 12px;padding:12px 14px;
+  text-align:left;border-radius:14px;cursor:pointer;
+  background:var(--card);border:1px solid var(--line);box-shadow:var(--sombra);
+  font:500 15px/1.35 var(--f);color:var(--fg2)}
+.elemsb.vazio{color:var(--blue);border-color:var(--blue);background:var(--card);font-weight:600}
+.elemsb:active{transform:scale(.99)}
 </style>
 </head>
 <body>
@@ -304,7 +312,7 @@ function envia(forca, fora){
   if(!forca && agora-_ultEnvio<4000) return;
   _ultEnvio=agora;
   const corpo={ nm:ST.nm, pts:ST.pts, cart:Object.keys(ST.feitos).length, txt:ST.textos||null,
-    pistas:ST.pistas, saidas:ST.saidas||0, fora:!!fora, rap:ST.rap||[],
+    pistas:ST.pistas, saidas:ST.saidas||0, fora:!!fora, rap:ST.rap||[], el:ST.elems||"",
     ult:ST.ult||"", fim:ST.fim||null, ts:agora };
   const u=SYNC.url.replace(/\/+$/,"")+"/"+SYNC.sessao+"/"+ST.ano+"/"+ST.eq+".json";
   try{
@@ -522,6 +530,9 @@ function escolheNome(ano,eq){
    '<button class="btn" id="outro">Gerar outro nome</button>'+
    '<p class="msg" id="conta" style="text-align:center"></p>'+
    '<button class="btn primary" id="vai" style="margin-top:6px">Começar</button></div>'+
+   '<div class="card" style="margin-top:12px"><p class="k">Quem está nesta equipa?</p>'+
+   '<p class="sub" style="margin:6px 0 10px">Um nome por linha. Podem acrescentar ou corrigir durante o jogo.</p>'+
+   '<textarea id="elems" rows="5" placeholder="Um nome por linha"></textarea></div>'+
    '<p class="sub" style="margin:14px 2px 0;font-size:14px">Carreguem em Começar só quando o professor disser. O cronómetro arranca nesse momento.</p>';
   const el=document.getElementById("nomeq"), bo=document.getElementById("outro"), cc=document.getElementById("conta");
   const pinta=()=>{ el.textContent=nomeDe(eq,k); };
@@ -535,8 +546,10 @@ function escolheNome(ano,eq){
   },250);
   const arranca2=()=>{
     clearInterval(t);
+    const ex=document.getElementById("elems");
     ST={ano:ano,eq:eq,nm:nomeDe(eq,k),ini:Date.now(),pts:0,feitos:{},err:{},
-        pistas:0,saidas:0,ult:"",passo:{},textos:{},tmp:{},rap:[],fim:null};
+        pistas:0,saidas:0,ult:"",passo:{},textos:{},tmp:{},rap:[],
+        elems:(ex?ex.value:"").slice(0,400),fim:null};
     guarda(); jogo(); envia(true,false);
   };
   document.getElementById("vai").onclick=function(){
@@ -565,10 +578,28 @@ function escolheNome(ano,eq){
   };
 }
 
+function editaElems(){
+  croFecha(); soTabuleiro(false);
+  const s=document.getElementById("slot");
+  s.innerHTML='<div class="card"><p class="k">Elementos da equipa</p>'+
+   '<p class="sub" style="margin:6px 0 10px">Escrevam o nome de cada pessoa, um por linha.</p>'+
+   '<textarea id="eltx" rows="6" placeholder="Um nome por linha"></textarea>'+
+   '<button class="btn primary" id="elok" style="margin-top:10px">Guardar</button>'+
+   '<button class="btn quiet" id="elno" style="margin-top:4px">Voltar ao tabuleiro</button></div>';
+  document.getElementById("eltx").value=ST.elems||"";
+  document.getElementById("elok").onclick=()=>{
+    ST.elems=document.getElementById("eltx").value.slice(0,400);
+    guarda(); envia(true,false); jogo(); window.scrollTo({top:0});
+  };
+  document.getElementById("elno").onclick=()=>{ jogo(); window.scrollTo({top:0}); };
+  document.getElementById("eltx").focus();
+}
+
 function soTabuleiro(mostra){
   const g=document.getElementById("grid"); if(g) g.style.display=mostra?"":"none";
   const f=document.querySelector(".fams"); if(f) f.style.display=mostra?"":"none";
   const t=document.getElementById("rodape"); if(t) t.style.display=mostra?"":"none";
+  const e=document.getElementById("belems"); if(e) e.style.display=mostra?"":"none";
 }
 function dados(c){ return c.build(rng(semente(ST.ano,ST.eq,c.cod))); }
 function cartoes(){ return monta(ST.ano===11?DADOS.a11:DADOS.a10, ST.eq); }
@@ -590,8 +621,13 @@ function jogo(){
    '<div class="fams" id="fams"><button class="fam'+(!ST.filtro?' sel':'')+'" data-f="">Todos</button>'+
    Object.keys(FAM).map(k=>'<button class="fam'+(ST.filtro===k?' sel':'')+(ff[k]?' on':'')+'" data-f="'+k+'">'+
      FAM[k].n+(ff[k]?" ✓":"")+'</button>').join("")+'</div>'+
+   '<button class="elemsb'+(ST.elems&&ST.elems.trim()?'':' vazio')+'" id="belems">'+
+     (ST.elems&&ST.elems.trim()
+       ? 'Elementos: '+esc(ST.elems.trim().split(/\n+/).map(x=>x.trim()).filter(Boolean).join(", "))
+       : 'Escrever os nomes da equipa')+'</button>'+
    '<div class="grid" id="grid"></div><div id="slot"></div>'+
    '<div class="rodape" id="rodape"><button class="btn primary" id="term">Terminar e gerar o código</button></div>';
+  document.getElementById("belems").onclick=editaElems;
   document.querySelectorAll("#fams .fam").forEach(b=>{
     b.onclick=()=>{ ST.filtro=b.dataset.f||null; guarda(); jogo(); window.scrollTo({top:0}); };
   });
@@ -974,7 +1010,25 @@ function mostraFim(cod,feitos,mins){
    '<div><span>Cartões</span><b>'+feitos+'<span style="font-size:13px;color:var(--fg2)">/16</span></b></div>'+
    '<div><span>Pistas</span><b>'+ST.pistas+'</b></div>'+
    '<div><span>Minutos</span><b>'+mins+'</b></div></div>'+
+   '<button class="elemsb'+(ST.elems&&ST.elems.trim()?'':' vazio')+'" id="belems" style="margin-top:14px">'+
+     (ST.elems&&ST.elems.trim()
+       ? 'Elementos: '+esc(ST.elems.trim().split(/\n+/).map(x=>x.trim()).filter(Boolean).join(", "))
+       : 'Falta escrever os nomes da equipa')+'</button>'+
    '<p class="sub" style="margin-top:16px">Não fechem esta página até o código ser registado.</p>';
+  document.getElementById("belems").onclick=()=>{
+    app.innerHTML='<h1>Elementos da equipa</h1>'+
+     '<p class="sub">Escrevam o nome de cada pessoa, um por linha.</p>'+
+     '<div class="card"><textarea id="eltx" rows="6" placeholder="Um nome por linha"></textarea>'+
+     '<button class="btn primary" id="elok" style="margin-top:10px">Guardar</button>'+
+     '<button class="btn quiet" id="elno" style="margin-top:4px">Voltar ao código</button></div>';
+    document.getElementById("eltx").value=ST.elems||"";
+    document.getElementById("eltx").focus();
+    document.getElementById("elok").onclick=()=>{
+      ST.elems=document.getElementById("eltx").value.slice(0,400);
+      guarda(); envia(true,false); mostraFim(cod,feitos,mins); window.scrollTo({top:0});
+    };
+    document.getElementById("elno").onclick=()=>{ mostraFim(cod,feitos,mins); window.scrollTo({top:0}); };
+  };
 }
 
 /* ---------- arranque ---------- */

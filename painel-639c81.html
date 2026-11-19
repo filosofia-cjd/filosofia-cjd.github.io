@@ -273,6 +273,14 @@ footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--sep);color:va
 body{-webkit-user-select:none;-moz-user-select:none;user-select:none;-webkit-touch-callout:none}
 textarea,input{-webkit-user-select:text;-moz-user-select:text;user-select:text}
 
+/* ---- elementos da equipa ---- */
+.elemsb{display:block;width:100%;min-height:46px;margin:0 0 12px;padding:12px 14px;
+  text-align:left;border-radius:14px;cursor:pointer;
+  background:var(--card);border:1px solid var(--line);box-shadow:var(--sombra);
+  font:500 15px/1.35 var(--f);color:var(--fg2)}
+.elemsb.vazio{color:var(--blue);border-color:var(--blue);background:var(--card);font-weight:600}
+.elemsb:active{transform:scale(.99)}
+
 .segs{display:flex;background:var(--fill);border-radius:10px;padding:2px;margin:18px 0 4px}
 .segs button{flex:1;appearance:none;border:0;background:transparent;color:var(--fg);
   font:600 15px/1 var(--f);padding:9px 10px;border-radius:8px;cursor:pointer}
@@ -291,6 +299,8 @@ textarea,input{-webkit-user-select:text;-moz-user-select:text;user-select:text}
 .tile .d+.d{margin-top:1px}
 .tile .av{font:600 12px/1 var(--f);color:var(--red);margin-top:6px}
 .tile .rap{font:600 12px/1.3 var(--f);color:var(--orange);margin-top:5px}
+.tile .els{font:500 12px/1.35 var(--f);color:var(--fg2);margin-top:6px;
+  padding-top:6px;border-top:1px solid var(--sep)}
 .tile .ok{font:600 12px/1 var(--f);color:var(--green);margin-top:6px}
 .est{display:flex;gap:8px;align-items:center;font:400 14px/1 var(--f);color:var(--fg2);margin:12px 2px 0}
 .ponto{width:8px;height:8px;border-radius:99px;background:var(--fg3);flex:0 0 auto}
@@ -407,7 +417,7 @@ function deVivo(){
     const v=vivo[k]||{};
     return {eq:parseInt(k,10),nome:v.nm||"",pts:v.pts||0,cart:v.cart||0,
             pistas:v.pistas||0,saidas:v.saidas||0,fora:!!v.fora,ult:v.ult||"",
-            rap:Array.isArray(v.rap)?v.rap:[],
+            rap:Array.isArray(v.rap)?v.rap:[], el:typeof v.el==="string"?v.el:"",
             txt:v.txt||null,fim:v.fim||null,ts:v.ts||0,ano:ANO_VER,mins:0};
   }).sort((a,b)=> b.pts-a.pts || b.cart-a.cart || a.eq-b.eq);
 }
@@ -434,6 +444,7 @@ function pinta(){
     return '<div class="'+cls+'"><div class="n"><span class="eq">'+(e.nome?esc(e.nome):"Equipa "+e.eq)+
       '</span><span class="p">'+e.pts+'</span></div>'+
       '<div class="d">mesa '+e.eq+' · '+e.cart+'/16 cartões</div>'+
+      (e.el.trim()?'<div class="els">'+esc(e.el.trim().split(/\n+/).map(x=>x.trim()).filter(Boolean).join(" · "))+'</div>':'')+
       '<div class="d">'+pl(e.pistas,"pista","pistas")+' · '+pl(e.saidas,"saída","saídas")+'</div>'+
       (e.rap.length?'<div class="rap" title="'+esc(e.rap.join(", "))+'">⚡ '+
         pl(e.rap.length,"cartão muito rápido","cartões muito rápidos")+'</div>':'')+
@@ -516,7 +527,9 @@ function leitor(){
          ' <span style="color:var(--fg2);font-weight:500">· '+TIT[cod]+' · '+pl(comResposta.length,"equipa","equipas")+'</span></h3>';
       comResposta.forEach(e=>{
         h+='<div class="card" style="margin-bottom:10px"><div class="d" style="font:600 13px/1 var(--f);color:var(--fg2);margin-bottom:6px">'+
-           esc(e.nome||("Equipa "+e.eq))+' · mesa '+e.eq+'</div><div style="font-size:16px;white-space:pre-wrap">'+
+           esc(e.nome||("Equipa "+e.eq))+' · mesa '+e.eq+
+           (e.el&&e.el.trim()?' · '+esc(e.el.trim().split(/\n+/).map(x=>x.trim()).filter(Boolean).join(", ")):'')+
+           '</div><div style="font-size:16px;white-space:pre-wrap">'+
            esc(e.txt[cod])+'</div></div>';
       });
     });
